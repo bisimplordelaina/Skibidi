@@ -1,4 +1,4 @@
--- ✅ Lấy dịch vụ game
+
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -6,11 +6,9 @@ local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = game.Workspace.CurrentCamera
 
--- ✅ Tạo UI Menu
 local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
 ScreenGui.ResetOnSpawn = false
 
--- 🎯 Hàm tạo nút
 local function CreateButton(Name, Position, Callback)
     local Button = Instance.new("TextButton", ScreenGui)
     Button.Size = UDim2.new(0, 200, 0, 40)
@@ -28,7 +26,6 @@ local function CreateButton(Name, Position, Callback)
     return Button
 end
 
--- ✅ Auto Random Fruit
 local AutoRandomFruit = false
 CreateButton("Auto Random Fruit", 0.05, function()
     AutoRandomFruit = not AutoRandomFruit
@@ -39,7 +36,6 @@ CreateButton("Auto Random Fruit", 0.05, function()
     return AutoRandomFruit
 end)
 
--- ✅ Auto Collect Fruit
 local AutoCollectFruit = false
 CreateButton("Auto Collect Fruit", 0.1, function()
     AutoCollectFruit = not AutoCollectFruit
@@ -54,7 +50,6 @@ CreateButton("Auto Collect Fruit", 0.1, function()
     return AutoCollectFruit
 end)
 
--- ✅ Fast Attack
 local FastAttack = false
 CreateButton("Fast Attack", 0.15, function()
     FastAttack = not FastAttack
@@ -67,7 +62,6 @@ CreateButton("Fast Attack", 0.15, function()
     return FastAttack
 end)
 
--- ✅ Aimbot Skill
 local AimbotSkill = false
 CreateButton("Aimbot Skill", 0.2, function()
     AimbotSkill = not AimbotSkill
@@ -95,7 +89,6 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- ✅ ESP Player
 local ESPPlayer = false
 CreateButton("ESP Player", 0.25, function()
     ESPPlayer = not ESPPlayer
@@ -116,7 +109,6 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- ✅ ESP Fruit
 local ESPFruit = false
 CreateButton("ESP Fruit", 0.3, function()
     ESPFruit = not ESPFruit
@@ -137,7 +129,6 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- ✅ Speed Hack
 local SpeedHack = false
 CreateButton("Speed Hack", 0.35, function()
     SpeedHack = not SpeedHack
@@ -152,7 +143,6 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
--- ✅ Infinite Jump
 local InfiniteJump = false
 CreateButton("Infinite Jump", 0.4, function()
     InfiniteJump = not InfiniteJump
@@ -165,7 +155,6 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- ✅ Dash No Cooldown & Soru No Cooldown
 CreateButton("Dash No CD & Soru No CD", 0.45, function()
     for _, v in pairs(getgc(true)) do
         if type(v) == "function" and getfenv(v).script == LocalPlayer.Character then
