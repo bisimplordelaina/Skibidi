@@ -1,0 +1,177 @@
+-- ✅ Lấy dịch vụ game
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+local LocalPlayer = Players.LocalPlayer
+local Camera = game.Workspace.CurrentCamera
+
+-- ✅ Tạo UI Menu
+local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
+ScreenGui.ResetOnSpawn = false
+
+-- 🎯 Hàm tạo nút
+local function CreateButton(Name, Position, Callback)
+    local Button = Instance.new("TextButton", ScreenGui)
+    Button.Size = UDim2.new(0, 200, 0, 40)
+    Button.Position = UDim2.new(0.05, 0, Position, 0)
+    Button.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+    Button.Text = Name .. " OFF"
+    Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Button.Font = Enum.Font.SourceSansBold
+    Button.TextSize = 20
+    Button.MouseButton1Click:Connect(function()
+        local State = Callback()
+        Button.Text = Name .. (State and " ON" or " OFF")
+        Button.BackgroundColor3 = State and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(255, 0, 0)
+    end)
+    return Button
+end
+
+-- ✅ Auto Random Fruit
+local AutoRandomFruit = false
+CreateButton("Auto Random Fruit", 0.05, function()
+    AutoRandomFruit = not AutoRandomFruit
+    while AutoRandomFruit do
+        ReplicatedStorage.Remotes.CommF_:InvokeServer("Cousin", "Buy")
+        wait(60)
+    end
+    return AutoRandomFruit
+end)
+
+-- ✅ Auto Collect Fruit
+local AutoCollectFruit = false
+CreateButton("Auto Collect Fruit", 0.1, function()
+    AutoCollectFruit = not AutoCollectFruit
+    while AutoCollectFruit do
+        for _, Fruit in pairs(game.Workspace:GetChildren()) do
+            if Fruit:IsA("Tool") then
+                LocalPlayer.Character.HumanoidRootPart.CFrame = Fruit.Handle.CFrame
+                wait(0.5)
+            end
+        end
+    end
+    return AutoCollectFruit
+end)
+
+-- ✅ Fast Attack
+local FastAttack = false
+CreateButton("Fast Attack", 0.15, function()
+    FastAttack = not FastAttack
+    while FastAttack do
+        LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(11)
+        game:GetService("VirtualUser"):CaptureController()
+        game:GetService("VirtualUser"):Button1Down(Vector2.new())
+        wait(0.1)
+    end
+    return FastAttack
+end)
+
+-- ✅ Aimbot Skill
+local AimbotSkill = false
+CreateButton("Aimbot Skill", 0.2, function()
+    AimbotSkill = not AimbotSkill
+    return AimbotSkill
+end)
+
+RunService.RenderStepped:Connect(function()
+    if AimbotSkill then
+        local Closest = nil
+        local ShortestDistance = math.huge
+
+        for _, Player in pairs(Players:GetPlayers()) do
+            if Player ~= LocalPlayer and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+                local Distance = (Player.Character.HumanoidRootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
+                if Distance < ShortestDistance then
+                    Closest = Player
+                    ShortestDistance = Distance
+                end
+            end
+        end
+
+        if Closest then
+            Camera.CFrame = CFrame.new(Camera.CFrame.Position, Closest.Character.HumanoidRootPart.Position)
+        end
+    end
+end)
+
+-- ✅ ESP Player
+local ESPPlayer = false
+CreateButton("ESP Player", 0.25, function()
+    ESPPlayer = not ESPPlayer
+    return ESPPlayer
+end)
+
+RunService.RenderStepped:Connect(function()
+    if ESPPlayer then
+        for _, Player in pairs(Players:GetPlayers()) do
+            if Player ~= LocalPlayer and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+                local Box = Drawing.new("Square")
+                Box.Size = Vector2.new(100, 100)
+                Box.Position = Vector2.new(Player.Character.HumanoidRootPart.Position.X, Player.Character.HumanoidRootPart.Position.Y)
+                Box.Color = Color3.fromRGB(255, 0, 0)
+                Box.Visible = true
+            end
+        end
+    end
+end)
+
+-- ✅ ESP Fruit
+local ESPFruit = false
+CreateButton("ESP Fruit", 0.3, function()
+    ESPFruit = not ESPFruit
+    return ESPFruit
+end)
+
+RunService.RenderStepped:Connect(function()
+    if ESPFruit then
+        for _, Fruit in pairs(game.Workspace:GetChildren()) do
+            if Fruit:IsA("Tool") then
+                local Box = Drawing.new("Square")
+                Box.Size = Vector2.new(50, 50)
+                Box.Position = Vector2.new(Fruit.Handle.Position.X, Fruit.Handle.Position.Y)
+                Box.Color = Color3.fromRGB(0, 255, 0)
+                Box.Visible = true
+            end
+        end
+    end
+end)
+
+-- ✅ Speed Hack
+local SpeedHack = false
+CreateButton("Speed Hack", 0.35, function()
+    SpeedHack = not SpeedHack
+    return SpeedHack
+end)
+
+RunService.RenderStepped:Connect(function()
+    if SpeedHack then
+        LocalPlayer.Character.Humanoid.WalkSpeed = 100
+    else
+        LocalPlayer.Character.Humanoid.WalkSpeed = 16
+    end
+end)
+
+-- ✅ Infinite Jump
+local InfiniteJump = false
+CreateButton("Infinite Jump", 0.4, function()
+    InfiniteJump = not InfiniteJump
+    return InfiniteJump
+end)
+
+UserInputService.JumpRequest:Connect(function()
+    if InfiniteJump then
+        LocalPlayer.Character.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+    end
+end)
+
+-- ✅ Dash No Cooldown & Soru No Cooldown
+CreateButton("Dash No CD & Soru No CD", 0.45, function()
+    for _, v in pairs(getgc(true)) do
+        if type(v) == "function" and getfenv(v).script == LocalPlayer.Character then
+            if debug.getinfo(v).name == "Dash" or debug.getinfo(v).name == "Soru" then
+                setupvalue(v, 2, 0)
+            end
+        end
+    end
+end)
