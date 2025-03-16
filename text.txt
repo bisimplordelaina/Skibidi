@@ -1,43 +1,38 @@
-
+-- ✅ Lấy dịch vụ game
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = Players.LocalPlayer
 local Camera = game.Workspace.CurrentCamera
 
-
+-- ✅ Tạo UI Menu chính (Ẩn/Hiện khi nhấn)
 local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
 ScreenGui.ResetOnSpawn = false
 
-
-local OpenMenuButton = Instance.new("Frame", ScreenGui)
+-- 📌 **Tạo nút mở menu (Hình vuông)**
+local OpenMenuButton = Instance.new("TextButton", ScreenGui)
 OpenMenuButton.Size = UDim2.new(0, 50, 0, 50)
 OpenMenuButton.Position = UDim2.new(0.05, 0, 0.05, 0)
 OpenMenuButton.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
-OpenMenuButton.Visible = true
+OpenMenuButton.Text = "☰"
+OpenMenuButton.TextSize = 30
+OpenMenuButton.Font = Enum.Font.SourceSansBold
+OpenMenuButton.TextColor3 = Color3.fromRGB(0, 0, 0)
 
-local ClickText = Instance.new("TextLabel", OpenMenuButton)
-ClickText.Size = UDim2.new(1, 0, 1, 0)
-ClickText.Text = "☰"
-ClickText.TextColor3 = Color3.fromRGB(0, 0, 0)
-ClickText.Font = Enum.Font.SourceSansBold
-ClickText.TextSize = 30
-ClickText.BackgroundTransparency = 1
-
-
+-- 📌 **Tạo khu vực menu (ẩn khi chưa mở)**
 local MenuFrame = Instance.new("Frame", ScreenGui)
-MenuFrame.Size = UDim2.new(0, 250, 0, 400)
+MenuFrame.Size = UDim2.new(0, 250, 0, 500)
 MenuFrame.Position = UDim2.new(0.05, 0, 0.12, 0)
 MenuFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 MenuFrame.Visible = false
 
-OpenMenuButton.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        MenuFrame.Visible = not MenuFrame.Visible
-    end
+-- ✅ Fix lỗi trên PE (Mobile) - Dùng sự kiện MouseButton1Click thay vì InputBegan
+OpenMenuButton.MouseButton1Click:Connect(function()
+    MenuFrame.Visible = not MenuFrame.Visible
 end)
 
+-- 🎯 Hàm tạo nút nhỏ trong menu
 local function CreateButton(Name, Position, Callback)
     local Button = Instance.new("TextButton", MenuFrame)
     Button.Size = UDim2.new(0, 230, 0, 40)
@@ -55,6 +50,26 @@ local function CreateButton(Name, Position, Callback)
     return Button
 end
 
+-- 📌 **MỤC: FAST ATTACK (KIẾM + VÕ)**
+local FastAttack = false
+CreateButton("⚔️ Fast Attack (Sword + Melee)", 0.05, function()
+    FastAttack = not FastAttack
+    return FastAttack
+end)
+
+RunService.RenderStepped:Connect(function()
+    if FastAttack then
+        pcall(function()
+            LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState(11) -- Loại bỏ knockback
+            local VirtualUser = game:GetService("VirtualUser")
+            VirtualUser:CaptureController()
+            VirtualUser:Button1Down(Vector2.new()) -- Nhấn chuột liên tục để đánh nhanh
+        end)
+    end
+end)
+
+-- 📌 **MỤC: MOVEMENT (Speed Hack + Dash No Cooldown)**
+local SpeedValue = 50  -- Giá trị mặc định
 
 local SpeedText = Instance.new("TextLabel", MenuFrame)
 SpeedText.Size = UDim2.new(0, 230, 0, 30)
@@ -65,16 +80,7 @@ SpeedText.TextColor3 = Color3.fromRGB(255, 255, 255)
 SpeedText.Font = Enum.Font.SourceSansBold
 SpeedText.TextSize = 18
 
-local SpeedSlider = Instance.new("TextButton", MenuFrame)
-SpeedSlider.Size = UDim2.new(0, 230, 0, 40)
-SpeedSlider.Position = UDim2.new(0.05, 0, 0.2, 0)
-SpeedSlider.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
-SpeedSlider.Text = "← Adjust Speed →"
-SpeedSlider.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpeedSlider.Font = Enum.Font.SourceSansBold
-SpeedSlider.TextSize = 18
-
-SpeedSlider.MouseButton1Click:Connect(function()
+local SpeedSlider = CreateButton("← Adjust Speed →", 0.2, function()
     SpeedValue = SpeedValue + 10
     if SpeedValue > 500 then SpeedValue = 50 end  -- Giới hạn tốc độ
     SpeedText.Text = "Speed: " .. SpeedValue
@@ -84,7 +90,7 @@ RunService.RenderStepped:Connect(function()
     LocalPlayer.Character.Humanoid.WalkSpeed = SpeedValue
 end)
 
-CreateButton("⚡ Dash & Soru No CD", 0.25, function()
+CreateButton("⚡ Dash & Soru No CD", 0.3, function()
     for _, v in pairs(getgc(true)) do
         if type(v) == "function" and getfenv(v).script == LocalPlayer.Character then
             if debug.getinfo(v).name == "Dash" or debug.getinfo(v).name == "Soru" then
