@@ -9,16 +9,16 @@ local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
 ScreenGui.ResetOnSpawn = false
 
 local OpenMenuButton = Instance.new("TextButton", ScreenGui)
-OpenMenuButton.Size = UDim2.new(0, 100, 0, 40)
+OpenMenuButton.Size = UDim2.new(0, 50, 0, 50)
 OpenMenuButton.Position = UDim2.new(0.05, 0, 0.05, 0)
 OpenMenuButton.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
-OpenMenuButton.Text = "📜 Menu"
-OpenMenuButton.TextSize = 20
+OpenMenuButton.Text = "☰"
+OpenMenuButton.TextSize = 30
 OpenMenuButton.Font = Enum.Font.SourceSansBold
 OpenMenuButton.TextColor3 = Color3.fromRGB(0, 0, 0)
 
 local MenuFrame = Instance.new("Frame", ScreenGui)
-MenuFrame.Size = UDim2.new(0, 300, 0, 350)
+MenuFrame.Size = UDim2.new(0, 250, 0, 350)
 MenuFrame.Position = UDim2.new(0.05, 0, 0.12, 0)
 MenuFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 MenuFrame.Visible = false
@@ -29,7 +29,7 @@ end)
 
 local function CreateButton(Name, Position, Callback)
     local Button = Instance.new("TextButton", MenuFrame)
-    Button.Size = UDim2.new(0, 280, 0, 40)
+    Button.Size = UDim2.new(0, 230, 0, 40)
     Button.Position = UDim2.new(0.05, 0, Position, 0)
     Button.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
     Button.Text = Name .. " OFF"
@@ -44,74 +44,76 @@ local function CreateButton(Name, Position, Callback)
     return Button
 end
 
-local Aimbot = false
-CreateButton("🎯 Aimbot Skill", 0.05, function()
-    Aimbot = not Aimbot
-    return Aimbot
-end)
-
-RunService.RenderStepped:Connect(function()
-    if Aimbot then
-        local ClosestEnemy = nil
-        local ShortestDistance = 1500
-
-        for _, Player in pairs(Players:GetPlayers()) do
-            if Player ~= LocalPlayer and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
-                local Distance = (Player.Character.HumanoidRootPart.Position - LocalPlayer.Character.HumanoidRootPart.Position).Magnitude
-                if Distance < ShortestDistance then
-                    ClosestEnemy = Player
-                    ShortestDistance = Distance
-                end
-            end
-        end
-
-        if ClosestEnemy then
-            local TargetPosition = ClosestEnemy.Character.HumanoidRootPart.Position + ClosestEnemy.Character.HumanoidRootPart.Velocity * 0.1
-            Mouse.Hit = CFrame.new(TargetPosition)
-        end
-    end
-end)
-
-_G.DodgewithoutCool = false
-CreateButton("⚡ Dash & Soru No CD", 0.1, function()
-    _G.DodgewithoutCool = not _G.DodgewithoutCool
-    if _G.DodgewithoutCool then
-        local player = Players.LocalPlayer
-        local character = player.Character or player.CharacterAdded:Wait()
-        wait(3)
-
-        for _, v in next, getgc() do
-            if typeof(v) == "function" and getfenv(v).script == character:WaitForChild("Dodge") then
-                for i, v2 in next, getupvalues(v) do
-                    if tostring(v2) == "0.4" then
-                        repeat
-                            wait(0.1)
-                            setupvalue(v, i, 0)
-                        until not _G.DodgewithoutCool
+local DodgewithoutCool = false
+local function NoCooldown()
+    if DodgewithoutCool then
+        for i, v in next, getgc() do
+            if typeof(v) == "function" then
+                if getfenv(v).script == LocalPlayer.Character:WaitForChild("Dodge") then
+                    for i2, v2 in next, getupvalues(v) do
+                        if tostring(v2) == "0.4" then
+                            repeat wait(.1)
+                                setupvalue(v, i2, 0)
+                            until not DodgewithoutCool
+                        end
                     end
                 end
             end
         end
     end
-    return _G.DodgewithoutCool
+end
+
+CreateButton("⚡ Dash No CD", 0.05, function()
+    DodgewithoutCool = not DodgewithoutCool
+    NoCooldown()
+    return DodgewithoutCool
 end)
 
-local SpeedValue = 50
-local SpeedText = Instance.new("TextLabel", MenuFrame)
-SpeedText.Size = UDim2.new(0, 280, 0, 30)
-SpeedText.Position = UDim2.new(0.05, 0, 0.15, 0)
-SpeedText.BackgroundTransparency = 1
-SpeedText.Text = "Speed: " .. SpeedValue
-SpeedText.TextColor3 = Color3.fromRGB(255, 255, 255)
-SpeedText.Font = Enum.Font.SourceSansBold
-SpeedText.TextSize = 18
-
-local SpeedSlider = CreateButton("🔧 Adjust Speed", 0.2, function()
-    SpeedValue = SpeedValue + 10
-    if SpeedValue > 350 then SpeedValue = 1 end
-    SpeedText.Text = "Speed: " .. SpeedValue
+local AimbotSkill = false
+local gg = getrawmetatable(game)
+local old = gg.__namecall
+setreadonly(gg, false)
+gg.__namecall = newcclosure(function(...)
+    local method = getnamecallmethod()
+    local args = {...}
+    if tostring(method) == "FireServer" then
+        if tostring(args[1]) == "RemoteEvent" then
+            if tostring(args[2]) ~= "true" and tostring(args[2]) ~= "false" then
+                if AimbotSkill then
+                    args[2] = _G.AimBotSkillPosition
+                    return old(unpack(args))
+                end
+            end
+        end
+    end
+    return old(...)
 end)
 
-RunService.RenderStepped:Connect(function()
-    LocalPlayer.Character.Humanoid.WalkSpeed = SpeedValue
+CreateButton("🎯 Aimbot Skill", 0.1, function()
+    AimbotSkill = not AimbotSkill
+    return AimbotSkill
+end)
+
+local hb = game:GetService("RunService").Heartbeat
+local speaker = game:GetService("Players").LocalPlayer
+local tpwalking = false
+local currentSpeed = 90
+local walkSpeedEnabled = false
+
+local function startTeleportWalk(character)
+    local hum = character:WaitForChild("Humanoid")
+    while walkSpeedEnabled do
+        if hum.MoveDirection.Magnitude > 0 then
+            speaker.Character:TranslateBy(hum.MoveDirection * currentSpeed / 10)
+        end
+        hb:Wait()
+    end
+end
+
+CreateButton("🚀 Speed Hack", 0.15, function()
+    walkSpeedEnabled = not walkSpeedEnabled
+    if walkSpeedEnabled then
+        startTeleportWalk(LocalPlayer.Character)
+    end
+    return walkSpeedEnabled
 end)
